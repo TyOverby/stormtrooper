@@ -45,6 +45,7 @@ pub enum Unit {
 
 impl std::fmt::Display for Unit {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        println!("got {:?}", self);
         match *self {
             Unit::Px(x) => write!(f, "{}px", x),
             Unit::In(x) => write!(f, "{}in", x),
@@ -62,6 +63,6 @@ pub struct Line {
 
 fn main() {
     let mut drawing = Drawing::new();
-    script::run_script(&mut drawing, "(cut-line 1 2 3 4)");
+    script::run_script(&mut drawing, "(cut-line 1 2 3 (mm 4))");
     svg::write_svg(&drawing, &mut std::io::stdout());
 }
