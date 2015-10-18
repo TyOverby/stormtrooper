@@ -82,7 +82,7 @@ pub fn run_script(drawing: &mut Drawing, script: &str) {
 
     context.set_fn("in", unit_cnv("in", Unit::In));
     context.set_fn("px", unit_cnv("px", Unit::Px));
-    context.set_fn("cm", unit_cnv("cm", Unit::In));
+    context.set_fn("cm", unit_cnv("cm", Unit::Cm));
     context.set_fn("mm", unit_cnv("mm", Unit::Mm));
     context.set_fn("cut-line", user_fn("cut-line", cut_line));
     context.set_fn("draw-line", user_fn("draw-line", draw_line));
