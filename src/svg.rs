@@ -18,30 +18,32 @@ struct SvgWriter {
     id_gen: u32,
 }
 
-pub fn write_svg<W: Write>(drawing: Drawing, writer: &mut W) -> IoResult<()> {
+pub fn write_svg<W: Write>(drawing: &Drawing, writer: &mut W) -> IoResult<()> {
     let mut svg_writer = SvgWriter {
         defs: Vec::new(),
         body: Vec::new(),
         id_gen: 0
     };
 
-    for figure in drawing {
+    for figure in drawing.figures() {
         write_figure(figure, &mut svg_writer);
     }
 
     try!(write!(writer, "{}", SVG_HEADER));
+    try!(write!(writer, "{}", "<defs>"));
     try!(writer.write_all(&svg_writer.defs[..]));
+    try!(write!(writer, "{}", "</defs>"));
     try!(writer.write_all(&svg_writer.body[..]));
     try!(write!(writer, "{}", "</svg>"));
 
     Ok(())
 }
 
-fn write_figure(figure: Figure, writer: &mut SvgWriter) {
-    (match figure {
+fn write_figure(figure: &Figure, writer: &mut SvgWriter) {
+    (match *figure {
         Figure::CutLine(Line { p1: (x1, y1), p2: (x2, y2) }) =>
-            write!(&mut writer.body, "<hi>"),
+            write!(&mut writer.body, r#"<line x1="{}" y1="{}" x2="{}" y2="{}"/>"#, x1, y1, x2, y2),
         Figure::DrawLine(Line { p1: (x1, y1), p2: (x2, y2) }, width) =>
-            write!(&mut writer.body, "<hi>"),
+            write!(&mut writer.body, r#"<line x1="{}" y1="{}" x2="{}" y2="{}"/>"#, x1, y1, x2, y2),
     }).unwrap();
 }
