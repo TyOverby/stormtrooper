@@ -37,7 +37,6 @@ fn run_web(last_generated: Arc<Mutex<Option<String>>>) {
 
     let _listening = hyper::Server::http("127.0.0.1:3000").unwrap()
         .handle(move |request: Request, response: Response| {
-            println!("{:?}", request.uri);
             if let hyper::uri::RequestUri::AbsolutePath(ref path) = request.uri {
                 if path == "/debug.svg" {
                     handle_debug(response, &last_generated);
@@ -76,7 +75,7 @@ fn run_watcher(last_generated: Arc<Mutex<Option<String>>>, file: &str) {
     // Create a channel to receive the events.
     let (tx, rx) = channel();
 
-    let mut watcher = PollWatcher::new_with_delay(tx, 50).unwrap();
+    let mut watcher = PollWatcher::new_with_delay(tx, 10).unwrap();
     watcher.watch(file).unwrap();
     update(file, &last_generated);
 
@@ -86,7 +85,6 @@ fn run_watcher(last_generated: Arc<Mutex<Option<String>>>, file: &str) {
         for change in rx.iter() {
             match change {
                 Event { op: Ok(WRITE), .. } => {
-                    println!("written! {:?}", change);
                     update(&file, &last_generated);
                 }
                 other => {

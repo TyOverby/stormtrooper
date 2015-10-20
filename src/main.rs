@@ -50,7 +50,6 @@ pub enum Unit {
 
 impl std::fmt::Display for Unit {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        println!("got {:?}", self);
         match *self {
             Unit::Px(x) => write!(f, "{}px", x),
             Unit::In(x) => write!(f, "{}in", x),
