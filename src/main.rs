@@ -1,7 +1,14 @@
+#![allow(dead_code, unused_imports)]
+
 extern crate ares;
+extern crate notify;
+extern crate iron;
+extern crate router;
+extern crate typemap;
 
 mod script;
 mod svg;
+mod viewer;
 
 pub struct Drawing {
     figures: Vec<Figure>,
@@ -62,7 +69,11 @@ pub struct Line {
 }
 
 fn main() {
+    /*
     let mut drawing = Drawing::new();
     script::run_script(&mut drawing, "(cut-line 1 2 3 (mm 4))");
-    svg::write_svg(&drawing, &mut std::io::stdout());
+    svg::write_svg(&drawing, &mut std::io::stdout()).unwrap();
+    */
+
+    viewer::start();
 }
