@@ -77,7 +77,7 @@ fn unit_cnv<F: 'static + Fn(f64) -> Unit>(name: &str, typ: F) -> ForeignFunction
     });
 }
 
-pub fn run_script(drawing: &mut Drawing, script: &str) {
+pub fn run_script(drawing: &mut Drawing, script: &str) -> AresResult<()> {
     let mut context = Context::new();
 
     context.set_fn("in", unit_cnv("in", Unit::In));
@@ -89,6 +89,6 @@ pub fn run_script(drawing: &mut Drawing, script: &str) {
 
     {
         let mut loaded_context = context.load(drawing);
-        loaded_context.eval_str(script).unwrap();
+        loaded_context.eval_str(script).map(|_| ())
     }
 }

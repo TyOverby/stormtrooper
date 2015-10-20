@@ -2,9 +2,7 @@
 
 extern crate ares;
 extern crate notify;
-extern crate iron;
-extern crate router;
-extern crate typemap;
+extern crate hyper;
 
 mod script;
 mod svg;

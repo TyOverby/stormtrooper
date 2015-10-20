@@ -2,17 +2,15 @@ use std::sync::{Arc, Mutex};
 use std::sync::mpsc::channel;
 
 use notify::{self, PollWatcher};
-use iron::{Iron, Response, status, Request, Headers};
-use iron::headers::{HeaderFormat, Header};
-use router::Router;
-use typemap::TypeMap;
+use hyper::{self, mime, header};
+use hyper::server::{Request, Response};
 
 use super::{script, svg, Drawing};
 
-fn run_web(last_generated: Arc<Mutex<Option<String>>>) {
-    let mut router = Router::new();
 
-    router.get("debug.svg", move |_: &mut Request| {
+fn run_web(last_generated: Arc<Mutex<Option<String>>>) {
+    /*
+    fn get_debug() {
         let mut headers = Headers::new();
         headers.set_raw("content-type", vec!["image/svg+xml".bytes().collect()]);
 
@@ -25,13 +23,25 @@ fn run_web(last_generated: Arc<Mutex<Option<String>>>) {
             extensions: TypeMap::new(),
             body: Some(Box::new(body))
         })
-    });
+    }*/
 
-    router.get("release.svg", |_: &mut Request| {
-        Ok(Response::with((status::Ok, "release.svg")))
-    });
+    let _listening = hyper::Server::http("127.0.0.1:3000").unwrap()
+        .handle(move |request: Request, mut response: Response| {
+            let mimetype =
+                mime::Mime(
+                    mime::TopLevel::Image,
+                    mime::SubLevel::Ext("svg+xml".into()),
+                    vec![(mime::Attr::Charset, mime::Value::Utf8)]);
 
-    Iron::new(router).http("localhost:3000").unwrap();
+            let guard = last_generated.lock().unwrap();
+            if let &Some(ref content) = &*guard {
+                response.headers_mut().set(header::ContentType(mimetype));
+                response.send(content.as_bytes());
+            } else {
+                *response.status_mut() = hyper::status::StatusCode::NoContent;
+                response.send("oh shit!".as_bytes());
+            }
+        });
 }
 
 fn run_watcher(last_generated: Arc<Mutex<Option<String>>>, file: &str) {
@@ -42,11 +52,29 @@ fn run_watcher(last_generated: Arc<Mutex<Option<String>>>, file: &str) {
     use std::io::Read;
     use std::thread;
 
+    fn update(file: &str, last_generated: &Arc<Mutex<Option<String>>>) {
+        let mut file = File::open(&file[..]).unwrap();
+        let mut buf = String::new();
+        file.read_to_string(&mut buf).unwrap();
+
+        let mut drawing = Drawing::new();
+        if let Err(_) = script::run_script(&mut drawing, &buf) {
+            return;
+        }
+
+        let mut out_buf = Vec::new();
+        svg::write_svg(&drawing, &mut out_buf).unwrap();
+        let out_str = String::from_utf8(out_buf).unwrap();
+        let mut guard = last_generated.lock().unwrap();
+        *guard = Some(out_str);
+    }
+
     // Create a channel to receive the events.
     let (tx, rx) = channel();
 
     let mut watcher = PollWatcher::new_with_delay(tx, 50).unwrap();
     watcher.watch(file).unwrap();
+    update(file, &last_generated);
 
     let file = file.to_owned();
     thread::spawn(move || {
@@ -55,18 +83,7 @@ fn run_watcher(last_generated: Arc<Mutex<Option<String>>>, file: &str) {
             match change {
                 Event { op: Ok(WRITE), .. } => {
                     println!("written! {:?}", change);
-                    let mut file = File::open(&file[..]).unwrap();
-                    let mut buf = String::new();
-                    file.read_to_string(&mut buf).unwrap();
-
-                    let mut drawing = Drawing::new();
-                    script::run_script(&mut drawing, &buf);
-
-                    let mut out_buf = Vec::new();
-                    svg::write_svg(&drawing, &mut out_buf).unwrap();
-                    let out_str = String::from_utf8(out_buf).unwrap();
-                    let mut guard = last_generated.lock().unwrap();
-                    *guard = Some(out_str);
+                    update(&file, &last_generated);
                 }
                 other => {
                     println!("something else!: {:?}", other)

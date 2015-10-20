@@ -7,7 +7,6 @@ const SVG_HEADER: &'static str = r#"<?xml version="1.0" encoding="ISO-8859-1" st
     "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg xmlns="http://www.w3.org/2000/svg"
      xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"
-         width="200px" height="50px"
          viewBox="0 0 200 50"
          zoomAndPan="disable" preserveAspectRatio="none">
 "#;
@@ -42,7 +41,7 @@ pub fn write_svg<W: Write>(drawing: &Drawing, writer: &mut W) -> IoResult<()> {
 fn write_figure(figure: &Figure, writer: &mut SvgWriter) {
     (match *figure {
         Figure::CutLine(Line { p1: (x1, y1), p2: (x2, y2) }) =>
-            write!(&mut writer.body, r#"<line x1="{}" y1="{}" x2="{}" y2="{}"/>"#, x1, y1, x2, y2),
+            write!(&mut writer.body, r#"<line stroke="black" stroke-width="10px" x1="{}" y1="{}" x2="{}" y2="{}"/>"#, x1, y1, x2, y2),
         Figure::DrawLine(Line { p1: (x1, y1), p2: (x2, y2) }, width) =>
             write!(&mut writer.body, r#"<line x1="{}" y1="{}" x2="{}" y2="{}"/>"#, x1, y1, x2, y2),
     }).unwrap();

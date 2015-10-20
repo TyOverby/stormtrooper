@@ -9,8 +9,6 @@ path = "../ares/"
 [dependencies.notify]
 path = "../rsnotify/"
 
-[dependencies]
-#notify = "2.3.3"
-iron = "0.2.*"
-router = "0.0.15"
-typemap = "0.3.3"
+[dependencies.hyper]
+version = "0.6"
+default-features = false
