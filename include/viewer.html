@@ -9,15 +9,30 @@
                 width: 100%;
                 height: 100%;
             }
+            .canvas {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+
+                transition: opacity 0.45s;
+            }
+
+            .hidden {
+                opacity: 0;
+            }
         </style>
         <script src="./svg-pan-zoom.min.js"></script>
     </head>
     <body>
-        <!-- <img id="image" src="./debug.svg" width="100%" height="100%"/> -->
-        <object id="image" width="100%" height="100%" data="./debug.svg" type="image/svg+xml"></object>
+        <div id="images" style="width: 100%; height: 100%;">
+            <object class="canvas" style="width: 100%; height: 100%;" data="./debug.svg" type="image/svg+xml"></object>
+        </div>
 
         <!-- Web Sockets -->
         <script>
+            var images = document.querySelector("#images");
             var image = document.querySelector("#image");
             var socket = new WebSocket("ws://127.0.0.1:2794");
 
@@ -26,11 +41,44 @@
             var lastPan = null;
             var lastZoom = null;
 
-            function load() {
-                if (lastController != null) {
-                    lastPan = lastController.getPan();
-                    lastZoom = lastController.getZoom();
-                }
+            function add_new() {
+                var obj = document.createElement("object");
+                obj.className = "canvas hidden";
+                obj.data = "./debug.svg?v=" + new Date().getTime();
+                obj.type = "image/svg+xml";
+
+                images.appendChild(obj);
+                obj.className = "canvas";
+                obj.onload = function () {
+                    if (lastController != null) {
+                        lastPan = lastController.getPan();
+                        lastZoom = lastController.getZoom();
+                    }
+
+                    lastController = svgPanZoom(obj, {
+                        zoomEnabled: true,
+                        controlIconsEnabled: true,
+                    });
+
+                    // Set the svg to the right zoom and pan level
+                    if (lastPan != null && lastZoom != null) {
+                        lastController.zoom(lastZoom);
+                        lastController.pan(lastPan);
+                    }
+
+                    // Hide the other svgs
+                    for (i in images.children) {
+                        var ths = images.children[i];
+                        if (ths != obj) {
+                            ths.className = "canvas hidden";
+                        }
+                    }
+                };
+            }
+
+            socket.onmessage = add_new;
+
+            /*function load() {
 
                 console.log('reloading!');
                 image.onload = function () {
@@ -48,6 +96,7 @@
             }
             socket.onmessage = load;
             image.onload = load;
+            */
         </script>
     </body>
 </html>
