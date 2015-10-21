@@ -16,24 +16,38 @@
         <!-- <img id="image" src="./debug.svg" width="100%" height="100%"/> -->
         <object id="image" width="100%" height="100%" data="./debug.svg" type="image/svg+xml"></object>
 
-        <!-- Svg Pan Zoom -->
-        <script>
-            window.onload = function() {
-                svgPanZoom('#image', {
-                    zoomEnabled: true,
-                controlIconsEnabled: true
-                });
-            };
-
-        </script>
         <!-- Web Sockets -->
         <script>
             var image = document.querySelector("#image");
             var socket = new WebSocket("ws://127.0.0.1:2794");
-            socket.onmessage = function (event) {
+
+            var lastController = null;
+
+            var lastPan = null;
+            var lastZoom = null;
+
+            function load() {
+                if (lastController != null) {
+                    lastPan = lastController.getPan();
+                    lastZoom = lastController.getZoom();
+                }
+
                 console.log('reloading!');
-                image.src = "./debug.svg?v=" + new Date().getTime();
-            };
+                image.onload = function () {
+                    lastController = svgPanZoom('#image', {
+                        zoomEnabled: true,
+                        controlIconsEnabled: true
+                    });
+
+                    if (lastPan != null && lastZoom != null) {
+                        lastController.zoom(lastZoom);
+                        lastController.pan(lastPan);
+                    }
+                }
+                image.data = "./debug.svg?v=" + new Date().getTime();
+            }
+            socket.onmessage = load;
+            image.onload = load;
         </script>
     </body>
 </html>
