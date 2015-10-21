@@ -31,11 +31,26 @@ pub fn run_web(last_generated: Arc<Mutex<Option<String>>>) {
         writer.end().unwrap();
     }
 
+    fn handle_svg_pan_zoom(mut response: Response) {
+        let mimetype =
+            mime::Mime(
+                mime::TopLevel::Application,
+                mime::SubLevel::Javascript,
+                vec![(mime::Attr::Charset, mime::Value::Utf8)]);
+        response.headers_mut().set(header::ContentType(mimetype));
+        let mut writer = response.start().unwrap();
+        let mut index = File::open("./include/svg-pan-zoom.min.js").unwrap();
+        copy(&mut index, &mut writer).unwrap();
+        writer.end().unwrap();
+    }
+
     let _listening = hyper::Server::http("127.0.0.1:3000").unwrap()
         .handle(move |request: Request, response: Response| {
             if let hyper::uri::RequestUri::AbsolutePath(ref path) = request.uri {
                 if path.starts_with("/debug.svg") {
                     handle_debug(response, &last_generated);
+                } else if path == "/svg-pan-zoom.min.js" {
+                    handle_svg_pan_zoom(response);
                 } else if path == "/" {
                     handle_index(response);
                 }

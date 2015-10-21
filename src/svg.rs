@@ -6,9 +6,12 @@ const SVG_HEADER: &'static str = r#"<?xml version="1.0" encoding="ISO-8859-1" st
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
     "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg xmlns="http://www.w3.org/2000/svg"
-     xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"
-         viewBox="0 0 200 50"
-         zoomAndPan="disable" preserveAspectRatio="none">
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     xml:space="preserve"
+     width="100%"
+     height="100%"
+     viewBox="0 0 200 50"
+     zoomAndPan="disable" preserveAspectRatio="none">
 "#;
 
 struct SvgWriter {
