@@ -1,8 +1,9 @@
-#![allow(dead_code, unused_imports)]
+#![allow(dead_code)]
 
 extern crate ares;
 extern crate notify;
 extern crate hyper;
+extern crate websocket;
 
 mod script;
 mod svg;

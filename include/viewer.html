@@ -1,15 +1,23 @@
 <!doctype html>
 <html>
-<head>
-    <title> Stormtrooper </title>
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-        }
-    </style>
-</head>
-<body>
-    <img src="./debug.svg" width="100%" height="100%"/>
-</body>
+    <head>
+        <title> Stormtrooper </title>
+        <style>
+            html, body {
+                margin: 0;
+                padding: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <img id="image" src="./debug.svg" width="100%" height="100%"/>
+        <script>
+var image = document.querySelector("#image");
+var socket = new WebSocket("ws://127.0.0.1:2794");
+socket.onmessage = function (event) {
+    console.log('reloading!');
+    image.src = "./debug.svg?v=" + new Date().getTime();
+};
+        </script>
+    </body>
 </html>

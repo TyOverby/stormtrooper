@@ -42,7 +42,7 @@ fn write_figure(figure: &Figure, writer: &mut SvgWriter) {
     (match *figure {
         Figure::CutLine(Line { p1: (x1, y1), p2: (x2, y2) }) =>
             write!(&mut writer.body, r#"<line stroke="black" stroke-width="10px" x1="{}" y1="{}" x2="{}" y2="{}"/>"#, x1, y1, x2, y2),
-        Figure::DrawLine(Line { p1: (x1, y1), p2: (x2, y2) }, width) =>
+        Figure::DrawLine(Line { p1: (x1, y1), p2: (x2, y2) }, _width) =>
             write!(&mut writer.body, r#"<line x1="{}" y1="{}" x2="{}" y2="{}"/>"#, x1, y1, x2, y2),
     }).unwrap();
 }

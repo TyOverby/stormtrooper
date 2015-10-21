@@ -12,3 +12,6 @@ path = "../rsnotify/"
 [dependencies.hyper]
 version = "0.6"
 default-features = false
+
+[dependencies.websocket]
+version = "~0.12.2"
