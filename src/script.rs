@@ -10,54 +10,72 @@ use ares::{
 };
 use ares::stdlib::util::expect_arity;
 
-use super::{Drawing, Line, Figure, Unit};
+use super::{Drawing, Figure, Unit};
 
-fn into_number(value: &Value, drawing: &Drawing) -> AresResult<Unit> {
-    match value {
-        &Value::Int(i) => Ok(drawing.default_unit(i as f64)),
-        &Value::Float(f) => Ok(drawing.default_unit(f)),
-        &Value::UserData(ref ud) => {
-            if let Some(unit) = ud.downcast_ref() {
-                let unit: &Unit = unit;
-                Ok(unit.clone())
-            } else {
-                Err(AresError::UnexpectedType {
-                    value: Value::UserData(ud.clone()),
-                    expected: "Int or Float or UserData-Unit".into()
-                })
-            }
-        }
+fn into_number(value: &Value, context: &mut LoadedContext<Drawing>) -> AresResult<Unit> {
+    let user_data = match value {
+        a@&Value::Int(_) => context.call_named("default-unit", &[a.clone()]),
+        a@&Value::Float(_) => context.call_named("default-unit", &[a.clone()]),
+        a@&Value::UserData(_) => Ok(a.clone()),
         other => {
             Err(AresError::UnexpectedType {
                 value: other.clone(),
                 expected: "Int or Float or UserData-Unit".into()
             })
         }
+    };
+
+    let user_data = try!(user_data);
+    if let Value::UserData(ud) = user_data {
+        if let Some(unit) = ud.downcast_ref() {
+            let unit: &Unit = unit;
+            Ok(unit.clone())
+        } else {
+            Err(AresError::UnexpectedType {
+                value: Value::UserData(ud.clone()),
+                expected: "Int or Float or UserData-Unit".into()
+            })
+        }
+    } else {
+        Err(AresError::UnexpectedType {
+            value: user_data.clone(),
+            expected: "Int or Float or UserData-Unit".into()
+        })
     }
 }
 
 fn cut_line(args: &[Value], ctx: &mut LoadedContext<Drawing>) -> AresResult<Value> {
     try!(expect_arity(args, |l| l == 4, "exactly 4"));
-    let drawing = ctx.state();
-    let p1x = try!(into_number(&args[0], drawing));
-    let p1y = try!(into_number(&args[1], drawing));
-    let p2x = try!(into_number(&args[2], drawing));
-    let p2y = try!(into_number(&args[3], drawing));
+    let cut_width = ctx.get("cut-width").unwrap();
+    let cut_width = try!(into_number(&cut_width, ctx));
+    let p1x = try!(into_number(&args[0], ctx));
+    let p1y = try!(into_number(&args[1], ctx));
+    let p2x = try!(into_number(&args[2], ctx));
+    let p2y = try!(into_number(&args[3], ctx));
 
-    drawing.push(Figure::CutLine(Line{ p1: (p1x, p1y), p2: (p2x, p2y) }));
+    let drawing = ctx.state();
+    drawing.push(Figure::Line {
+        p1: (p1x, p1y),
+        p2: (p2x, p2y),
+        width: cut_width,
+    });
     Ok(0.into())
 }
 
 fn draw_line(args: &[Value], ctx: &mut LoadedContext<Drawing>) -> AresResult<Value> {
     try!(expect_arity(args, |l| l == 5, "exactly 5"));
-    let drawing = ctx.state();
-    let width = try!(into_number(&args[0], drawing));
-    let p1x = try!(into_number(&args[1], drawing));
-    let p1y = try!(into_number(&args[2], drawing));
-    let p2x = try!(into_number(&args[3], drawing));
-    let p2y = try!(into_number(&args[4], drawing));
+    let width = try!(into_number(&args[0], ctx));
+    let p1x = try!(into_number(&args[1], ctx));
+    let p1y = try!(into_number(&args[2], ctx));
+    let p2x = try!(into_number(&args[3], ctx));
+    let p2y = try!(into_number(&args[4], ctx));
 
-    drawing.push(Figure::DrawLine(Line{ p1: (p1x, p1y), p2: (p2x, p2y) }, width));
+    let drawing = ctx.state();
+    drawing.push(Figure::Line {
+        p1: (p1x, p1y),
+        p2: (p2x, p2y),
+        width: width,
+    });
     Ok(0.into())
 }
 
@@ -86,6 +104,9 @@ pub fn run_script(drawing: &mut Drawing, script: &str) -> AresResult<()> {
     context.set_fn("mm", unit_cnv("mm", Unit::Mm));
     context.set_fn("cut-line", user_fn("cut-line", cut_line));
     context.set_fn("draw-line", user_fn("draw-line", draw_line));
+    let inches = context.get("in");
+    context.set("default-unit", inches.unwrap());
+    context.set("cut-width", Value::user_data(Unit::Px(0.1)));
 
     {
         let mut loaded_context = context.load(drawing);

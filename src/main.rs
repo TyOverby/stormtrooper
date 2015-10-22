@@ -11,23 +11,17 @@ mod viewer;
 
 pub struct Drawing {
     figures: Vec<Figure>,
-    default: Box<Fn(f64) -> Unit>
 }
 
 impl Drawing {
     pub fn new() -> Drawing {
         Drawing {
             figures: vec![],
-            default: Box::new(Unit::In) as Box<Fn(f64) -> Unit>
         }
     }
 
     pub fn push(&mut self, figure: Figure) {
         self.figures.push(figure);
-    }
-
-    pub fn default_unit(&self, v: f64) -> Unit {
-        (self.default)(v)
     }
 
     pub fn figures(&self) -> &[Figure] {
@@ -37,8 +31,11 @@ impl Drawing {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Figure {
-    CutLine(Line),
-    DrawLine(Line, Unit)
+    Line {
+        p1: (Unit, Unit),
+        p2: (Unit, Unit),
+        width: Unit
+    }
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -58,12 +55,6 @@ impl std::fmt::Display for Unit {
             Unit::Mm(x) => write!(f, "{}mm", x),
         }
     }
-}
-
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub struct Line {
-    p1: (Unit, Unit),
-    p2: (Unit, Unit)
 }
 
 fn main() {
