@@ -1,10 +1,23 @@
-(set default-unit cm)
+(set default-unit px)
+
+(define quickline (lambda (x)
+    (cut-line
+        x
+        0
+        0
+        150)))
+
+(quickline 0)
+(quickline 12)
+(quickline 50)
+(quickline 201)
 
 (cut-line
+    100
     0
     0
-    1
-    2)
+    150)
+
 
 (cut-line
     (px 0)
