@@ -1,4 +1,4 @@
-use notify::{PollWatcher, Watcher, Event};
+use notify::{self, Watcher, Event};
 use notify::op::WRITE;
 use std::fs::File;
 use std::sync::mpsc::{channel, Receiver};
@@ -27,21 +27,21 @@ pub fn run_watcher(last_generated: Arc<Mutex<Option<String>>>, file: &str) -> Re
     }
 
     // Create a channel to receive the events.
-    let (tx, rx) = channel();
+    let (sx, rx) = channel();
     // This one is for the web socket server
     let (notify_sx, notify_rx) = channel();
 
-    let mut watcher = PollWatcher::new_with_delay(tx, 10).unwrap();
+    let mut watcher = notify::new(sx).unwrap();
     watcher.watch(file).unwrap();
+    ::std::mem::forget(watcher);
     update(file, &last_generated);
 
     let file = file.to_owned();
     thread::spawn(move || {
         let notify_sx = notify_sx;
-        let _watcher = watcher;
         for change in rx.iter() {
             match change {
-                Event { op: Ok(WRITE), .. } => {
+                Event { op: Ok(code), .. } if (code & WRITE == WRITE) => {
                     update(&file, &last_generated);
                     notify_sx.send(()).unwrap()
                 }
