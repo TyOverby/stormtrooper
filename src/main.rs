@@ -35,6 +35,12 @@ pub enum Figure {
         p1: (Unit, Unit),
         p2: (Unit, Unit),
         width: Unit
+    },
+    Circle {
+        center: (Unit, Unit),
+        radius: Unit,
+        width: Unit,
+        fill: Option<Unit>
     }
 }
 
@@ -58,11 +64,5 @@ impl std::fmt::Display for Unit {
 }
 
 fn main() {
-    /*
-    let mut drawing = Drawing::new();
-    script::run_script(&mut drawing, "(cut-line 1 2 3 (mm 4))");
-    svg::write_svg(&drawing, &mut std::io::stdout()).unwrap();
-    */
-
     viewer::start();
 }

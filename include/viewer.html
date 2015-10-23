@@ -48,7 +48,6 @@
                 obj.type = "image/svg+xml";
 
                 images.appendChild(obj);
-                obj.className = "canvas";
                 obj.onload = function () {
                     if (lastController != null) {
                         lastPan = lastController.getPan();
@@ -71,32 +70,15 @@
                         var ths = images.children[i];
                         if (ths != obj) {
                             ths.className = "canvas hidden";
+                        } else {
+                            ths.className = "canvas";
                         }
                     }
                 };
             }
 
+            window.onload = add_new;
             socket.onmessage = add_new;
-
-            /*function load() {
-
-                console.log('reloading!');
-                image.onload = function () {
-                    lastController = svgPanZoom('#image', {
-                        zoomEnabled: true,
-                        controlIconsEnabled: true
-                    });
-
-                    if (lastPan != null && lastZoom != null) {
-                        lastController.zoom(lastZoom);
-                        lastController.pan(lastPan);
-                    }
-                }
-                image.data = "./debug.svg?v=" + new Date().getTime();
-            }
-            socket.onmessage = load;
-            image.onload = load;
-            */
         </script>
     </body>
 </html>

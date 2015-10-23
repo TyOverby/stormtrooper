@@ -1,16 +1,16 @@
 (set default-unit px)
 
 (define quickline (lambda (x)
-    (cut-line
-        x
-        0
-        0
-        150)))
+    (define dist (sqrt (+. (->float (* x x )) (->float (* 150 150)))))
+    (cut-circle x 0 5)
+    (cut-circle 0 150 dist)
+    (cut-line x 0 0 150)
+))
 
 (quickline 0)
-(quickline 12)
 (quickline 50)
-(quickline 201)
+(quickline 100)
+(quickline 200)
 
 (cut-line
     100

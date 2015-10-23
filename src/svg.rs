@@ -43,8 +43,17 @@ pub fn write_svg<W: Write>(drawing: &Drawing, writer: &mut W) -> IoResult<()> {
 
 fn write_figure(figure: &Figure, writer: &mut SvgWriter) {
     (match *figure {
-        Figure::Line{ p1: (x1, y1), p2: (x2, y2), width} => {
-            write!(&mut writer.body, r#"<line stroke="black" stroke-width="{}" x1="{}" y1="{}" x2="{}" y2="{}"/>"#, width, x1, y1, x2, y2)
+        Figure::Line { p1: (x1, y1), p2: (x2, y2), width } => {
+            write!(
+                &mut writer.body,
+                r#"<line stroke="black" x1="{}" y1="{}" x2="{}" y2="{}" stroke-width="{}"/>"#,
+                x1, y1, x2, y2, width)
+        }
+        Figure::Circle { center: (x, y), radius, width, fill } => {
+            write!(
+                &mut writer.body,
+                r#"<circle cx="{}" cy="{}" r="{}" stroke-width="{}" stroke="black" fill="{}" />"#,
+                x, y, radius, width, fill.map(|a| a.to_string()).unwrap_or_else(|| "none".into()))
         }
     }).unwrap();
 }
