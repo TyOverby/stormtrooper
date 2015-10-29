@@ -117,7 +117,12 @@ fn unit_cnv<F: 'static + Fn(f64) -> Unit>(name: &str, typ: F) -> ForeignFunction
 
 pub fn run_script(drawing: &mut Drawing, script: &str) -> AresResult<()> {
     let mut context = Context::new();
+    prep_context(&mut context);
+    let mut loaded_context = context.load(drawing);
+    loaded_context.eval_str(script).map(|_| ())
+}
 
+fn prep_context(context: &mut Context<Drawing>) {
     context.set_fn("in", unit_cnv("in", Unit::In));
     context.set_fn("px", unit_cnv("px", Unit::Px));
     context.set_fn("cm", unit_cnv("cm", Unit::Cm));
@@ -130,9 +135,4 @@ pub fn run_script(drawing: &mut Drawing, script: &str) -> AresResult<()> {
     let inches = context.get("in");
     context.set("default-unit", inches.unwrap());
     context.set("cut-width", Value::user_data(Unit::Px(0.1)));
-
-    {
-        let mut loaded_context = context.load(drawing);
-        loaded_context.eval_str(script).map(|_| ())
-    }
 }

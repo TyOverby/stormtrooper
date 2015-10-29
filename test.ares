@@ -3,7 +3,6 @@
 (define quickline (lambda (x)
     (define dist (sqrt (+. (->float (* x x )) (->float (* 150 150)))))
     (cut-circle x 0 5)
-    (cut-circle 0 150 dist)
     (cut-line x 0 0 150)
 ))
 
@@ -12,15 +11,5 @@
 (quickline 100)
 (quickline 200)
 
-(cut-line
-    100
-    0
-    0
-    150)
-
-
-(cut-line
-    (px 0)
-    (px 50)
-    (px 150)
-    (px 50))
+(cut-line 100 0 0 150)
+(cut-line (px 0) (px 50) (px 150) (px 50))
